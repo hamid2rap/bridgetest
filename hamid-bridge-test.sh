@@ -1,24 +1,19 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
 # Colors
-GREEN="\033[0;32m"
-RED="\033[0;31m"
-CYAN="\033[0;36m"
+GREEN="\033[1;32m"
 RESET="\033[0m"
-BORDER="===================================================="
 
 RAW_URL="https://raw.githubusercontent.com/scriptzteam/Tor-Bridges-Collector/main/bridges-obfs4"
 
-echo -e "${CYAN}Fetching bridges...${RESET}"
+echo "Fetching bridges..."
 bridges=$(curl -s "$RAW_URL" | grep -v '^#' | grep -v '^$' | head -n 200)
 
 total=$(echo "$bridges" | wc -l)
 count=0
-
-# Temp file to store results
 tmpfile=$(mktemp)
 
-echo -e "${CYAN}Testing $total bridges...${RESET}"
+echo "Testing $total bridges..."
 
 while read -r line; do
     count=$((count+1))
@@ -35,22 +30,27 @@ while read -r line; do
       fi
     ) &
 
-    # Progress percentage
     progress=$((count*100/total))
     echo -ne "Progress: $progress% ($count/$total)\r"
 done <<< "$bridges"
 
 wait
-echo -e "\n${CYAN}Testing complete.${RESET}"
+echo -e "\nTesting complete."
 
-# Sort by ping and pick top 3
-echo -e "${CYAN}Top 3 fastest bridges:${RESET}"
+# Big green banner
+echo -e "${GREEN}"
+echo "################################################################################################"
+echo "#                                                                                              #"
+echo "#                                   HAMID TEST BRIDGE                                          #"
+echo "#                                                                                              #"
+echo "################################################################################################"
+echo -e "${RESET}"
+
+# Show top 3 fastest bridges
 sort -n "$tmpfile" | head -n 3 | while IFS="|" read ping line; do
-    echo -e "$BORDER"
-    echo -e "HAMID TEST BRIDGE"
-    echo -e "${GREEN}OK ✅ Ping: ${ping} ms${RESET}"
-    echo -e "$line"
-    echo -e "$BORDER"
+    echo -e "${GREEN}Bridge: $line${RESET}"
+    echo -e "${GREEN}Ping: ${ping} ms${RESET}"
+    echo -e "${GREEN}--------------------------------------------------------------------------------------------${RESET}"
 done
 
 rm "$tmpfile"
